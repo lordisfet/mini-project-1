@@ -55,10 +55,10 @@ bool isRelayActive(int value) {
 void printRelayStatus(bool status, int value) {
   if (status) 
   {
-    Serial.println("Relay " + String(status) + ". RAW: " + String(value));
+    Serial.println("Relay actiated. RAW: " + String(value));
   }
   else
   {
-    Serial.println("Relay " + String(status) + ". RAW: " + String(value));
+    Serial.println("Relay deactivated. RAW: " + String(value));
   }
 }
