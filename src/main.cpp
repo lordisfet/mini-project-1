@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Ticker.h>
+#include <OneButton.h>
 
 void switchRelay(int value);
 void printRelayStatus(bool status, int value);
@@ -8,28 +9,57 @@ const int MONITOR_BAUD_RATE = 115200;
 const int8_t ADC_PIN = 5;
 const int8_t ADC_RESOLUTION = 12;
 constexpr int16_t ADC_MAX_VALUE = (1 << ADC_RESOLUTION) - 1;
+
 const int8_t RELAY_IN_PIN = 4;
 const int8_t RELAY_STATUS_PRINT_DELAY = 1;
 int rawValue;
 
 Ticker printRelayStatusTicker;
 
+const int8_t BUTTON_PIN = 46;
+OneButton button(BUTTON_PIN, true);
+bool isClicked = false;
+
+void clickHandler()
+{
+  if (isClicked)
+  {
+    printRelayStatusTicker.detach();
+    digitalWrite(RELAY_IN_PIN, LOW);
+  }
+  else
+  {
+    printRelayStatusTicker.attach(RELAY_STATUS_PRINT_DELAY, []()
+                                  { printRelayStatus(digitalRead(RELAY_IN_PIN), rawValue); });
+  }
+
+  isClicked = !isClicked;
+}
+
 void setup()
 {
   Serial.begin(MONITOR_BAUD_RATE);
   pinMode(ADC_PIN, INPUT);
   pinMode(RELAY_IN_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   analogReadResolution(ADC_RESOLUTION);
 
   printRelayStatusTicker.attach(RELAY_STATUS_PRINT_DELAY, []()
                                 { printRelayStatus(digitalRead(RELAY_IN_PIN), rawValue); });
+
+  button.attachClick(clickHandler);
 }
 
 void loop()
 {
-  rawValue = analogRead(ADC_PIN);
-  switchRelay(rawValue);
+  button.tick();
+
+  if (isClicked)
+  {
+    rawValue = analogRead(ADC_PIN);
+    switchRelay(rawValue);
+  }
 }
 
 void switchRelay(int value)
