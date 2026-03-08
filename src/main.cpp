@@ -14,39 +14,44 @@ int rawValue;
 
 Ticker printRelayStatusTicker;
 
-void setup() {
-    Serial.begin(MONITOR_BAUD_RATE);
-    pinMode(ADC_PIN, INPUT);
-    pinMode(RELAY_IN_PIN, OUTPUT);
-    
-    analogReadResolution(ADC_RESOLUTION);
+void setup()
+{
+  Serial.begin(MONITOR_BAUD_RATE);
+  pinMode(ADC_PIN, INPUT);
+  pinMode(RELAY_IN_PIN, OUTPUT);
 
-    printRelayStatusTicker.attach(RELAY_STATUS_PRINT_DELAY, [] () {
-      printRelayStatus(digitalRead(RELAY_IN_PIN), rawValue);
-    });
+  analogReadResolution(ADC_RESOLUTION);
+
+  printRelayStatusTicker.attach(RELAY_STATUS_PRINT_DELAY, []()
+                                { printRelayStatus(digitalRead(RELAY_IN_PIN), rawValue); });
 }
 
-void loop() {
+void loop()
+{
   rawValue = analogRead(ADC_PIN);
   switchRelay(rawValue);
 }
 
-void switchRelay(int value) {
-  static bool relayState = false; 
+void switchRelay(int value)
+{
+  static bool relayState = false;
 
   int upperThreshold = 3 * ADC_MAX_VALUE / 4;
   int lowerThreshold = upperThreshold - 300;
 
-  if (value > upperThreshold) {
+  if (value > upperThreshold)
+  {
     digitalWrite(RELAY_IN_PIN, LOW);
-  } 
-  else if (value < lowerThreshold) {
+  }
+  else if (value < lowerThreshold)
+  {
     digitalWrite(RELAY_IN_PIN, HIGH);
   }
 }
 
-void printRelayStatus(bool status, int value) {
-  if (status) 
+void printRelayStatus(bool status, int value)
+{
+  if (status)
   {
     Serial.println("Relay actiated. RAW: " + String(value));
   }
