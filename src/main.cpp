@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Ticker.h>
 
-bool isRelayActive(int value);
+void switchRelay(int value);
 void printRelayStatus(bool status, int value);
 
 const int MONITOR_BAUD_RATE = 115200;
@@ -28,28 +28,21 @@ void setup() {
 
 void loop() {
   rawValue = analogRead(ADC_PIN);
-  if(isRelayActive(rawValue)) {
-    digitalWrite(RELAY_IN_PIN, LOW);
-  }
-  else {
-    digitalWrite(RELAY_IN_PIN, HIGH);
-  }
+  switchRelay(rawValue);
 }
 
-bool isRelayActive(int value) {
+void switchRelay(int value) {
   static bool relayState = false; 
 
   int upperThreshold = 3 * ADC_MAX_VALUE / 4;
   int lowerThreshold = upperThreshold - 300;
 
   if (value > upperThreshold) {
-    relayState = true;
+    digitalWrite(RELAY_IN_PIN, LOW);
   } 
   else if (value < lowerThreshold) {
-    relayState = false;
+    digitalWrite(RELAY_IN_PIN, HIGH);
   }
-
-  return relayState;
 }
 
 void printRelayStatus(bool status, int value) {
